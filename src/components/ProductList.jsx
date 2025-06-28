@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import './ProductList.css';
+import { useCart } from './CartContext';
+import CartControls from './CartControls.jsx';
 
 const ProductList = () => {
   const [products, setProducts] = useState([]);
+  const { cartItems, addToCart } = useCart();
 
   useEffect(() => {
     fetch('http://localhost:5000/api/products')
@@ -10,7 +13,6 @@ const ProductList = () => {
       .then(setProducts);
   }, []);
 
-  // Group products by category
   const groupedProducts = products.reduce((acc, product) => {
     const cat = product.category?.trim() || 'Uncategorized';
     if (!acc[cat]) acc[cat] = [];
@@ -19,24 +21,8 @@ const ProductList = () => {
   }, {});
 
   const categoryOrder = [
-    'Single Sound Crackers',
-    'Flower Pot',
-    'Ground Chakkar',
-    'Twinkling Star',
-    'Bombs',
-    'PAPER BOMBS',
-    'SOUND WAR',
-    'ROCKETS',
-    'LOOSE CRACKERS',
-    'PEACOCK VARIETIE FOUNTAINS',
-    'COLOUR FOUNTAIN (1 PC)',
-    'COLOUR FOUNTAIN (2 PC)',
-    'MOTHER"S BRAND FOUTAIN',
-    'NOVELTIES CRACKERS',
-    'KIDS VARIETIE',
-    'SPARKLERS',
-    'GIFT BOXES',
-
+    'Single Sound Crackers', 'Flower Pot', 'Ground Chakkar',
+    'Twinkling Star', 'Bombs', 'GIFT BOXES'
   ];
 
   return (
@@ -46,14 +32,13 @@ const ProductList = () => {
       <table className="product-table">
         <thead>
           <tr>
-            <th></th>
             <th>Image</th>
-            <th>Product Name</th>
-            <th>Packs</th>
+            <th>Product</th>
+            <th>Pack</th>
             <th>Category</th>
             <th>Price</th>
-            <th>QTY</th>
-            <th>Add Cart</th>
+            <th>Qty</th>
+            <th>Cart</th>
           </tr>
         </thead>
         <tbody>
@@ -64,49 +49,36 @@ const ProductList = () => {
             return (
               <React.Fragment key={category}>
                 <tr>
-                  <td colSpan="8" className="category-row">
-                    {category.toUpperCase()}
-                  </td>
+                  <td colSpan="7" className="category-row">{category}</td>
                 </tr>
-                {items.map((p) => (
-                  <tr key={p._id}>
-                    <td><input type="checkbox" /></td>
-                    <td>
-                      <img
-                        src={p.imageUrl}
-                        alt={p.name}
-                        className="product-img"
-                      />
-                    </td>
-                    <td>{p.name}</td>
-                    <td>{p.pack || '1 Pkt'}</td>
-                    <td><strong>{p.category}</strong></td>
-                    <td>
-                       <span className="original-price">₹{(p.originalPrice || 0).toFixed(2)}</span>
-                       <span className="discount-price">₹{(p.discountPrice || 0).toFixed(2)}</span>
-                    </td>
-                    <td>
-                      <input
-                        type="number"
-                        min="1"
-                        defaultValue="1"
-                        name={`qty-${p._id}`}
-                        id={`qty-${p._id}`}
-                        className="qty-input"
-                      />
-                    </td>
-                    <td>
-                      <button className="add-btn">Add</button>
-                    </td>
-                  </tr>
-                ))}
+                {items.map((p) => {
+                  const cartItem = cartItems.find(i => i._id === p._id);
+                  return (
+                    <tr key={p._id}>
+                      <td><img src={p.imageUrl} alt={p.name} className="product-img" /></td>
+                      <td>{p.name}</td>
+                      <td>{p.pack || '1 Pkt'}</td>
+                      <td>{p.category}</td>
+                      <td>
+                        <span className="original-price">₹{(p.originalPrice || 0).toFixed(2)}</span>{' '}
+                        <span className="discount-price">₹{(p.discountPrice || 0).toFixed(2)}</span>
+                      </td>
+                      <td>
+                        {cartItem ? (
+                          <CartControls item={cartItem} />
+                        ) : (
+                          <button className="add-btn" onClick={() => addToCart(p)}>Add</button>
+                        )}
+                      </td>
+                      <td>{cartItem?.qty || 0}</td>
+                    </tr>
+                  );
+                })}
               </React.Fragment>
             );
           })}
         </tbody>
       </table>
-
-      {products.length === 0 && <p className="no-products">No products available</p>}
     </div>
   );
 };

@@ -1,14 +1,19 @@
 import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import ProductList from './components/ProductList';
+import CartPage from './components/CartPage';
+import Header from './components/Header'; // Optional header
 
-function App() {
+const App = () => {
   return (
-    <>
-      {/* If advay header/nav is static in public/index.html, React will inject here */}
-      <ProductList />
-      {/* advay footer if exists */}
-    </>
+    <Router>
+      <Header />
+      <Routes>
+        <Route path="/" element={<ProductList />} />
+        <Route path="/cart" element={<CartPage />} />
+      </Routes>
+    </Router>
   );
-}
+};
 
 export default App;
